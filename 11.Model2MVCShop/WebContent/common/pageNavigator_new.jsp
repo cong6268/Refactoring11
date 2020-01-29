@@ -15,8 +15,8 @@
 		 		<li class="disabled">
 			</c:if>
 			<c:if test="${ resultPage.currentPage > resultPage.pageUnit }">
-				<li>
 			</c:if>
+				<li>
 		      <a href="javascript:fncGetUserList('${ resultPage.currentPage-1}')" aria-label="Previous">
 		        <span aria-hidden="true">&laquo;</span>
 		      </a>
@@ -44,8 +44,8 @@
 		  		<li class="disabled">
 			</c:if>
 			<c:if test="${ resultPage.endUnitPage < resultPage.maxPage }">
-				<li>
 			</c:if>
+				<li>
 		      <a href="javascript:fncGetUserList('${resultPage.endUnitPage+1}')" aria-label="Next">
 		        <span aria-hidden="true">&raquo;</span>
 		      </a>

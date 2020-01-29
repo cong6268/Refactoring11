@@ -17,26 +17,50 @@
 		<result property="regDate" 				column="reg_date" 					jdbcType="DATE" />
 		<result property="proTranCode" 				column="tran_status_code" 					jdbcType="CHAR" />
 		<result property="stock" 				column="stock" 					jdbcType="NUMERIC" />
+		<result property="likeIt" 				column="like_it" 					jdbcType="NUMERIC" />
 	</resultMap>
 	
 	<!-- SQL : INSERT -->
 	<insert 	id="addProduct"		parameterType="product" >
-	 	INSERT
-		INTO product( prod_no , prod_name , prod_detail , manufacture_day , price , image_file , reg_date , stock ) 
+		INSERT
+		INTO product( prod_no , prod_name , prod_detail , manufacture_day , price , image_file , reg_date , stock, like_it ) 
 		VALUES	 ( SEQ_product_prod_no.NEXTVAL , #{prodName:VARCHAR} , #{prodDetail:VARCHAR} , #{manuDate:VARCHAR} , 
-							#{price:NUMERIC} , #{fileName:VARCHAR} , SYSDATE, #{stock:NUMERIC} )
-	 </insert>
+							#{price:NUMERIC} , #{fileName:VARCHAR} , SYSDATE, #{stock:NUMERIC}, 0 )
+	</insert>
 	 
-	 <!-- SQL : SELECT ONE -->
-	 <select 	id="getProduct"	parameterType="int"	resultMap="productSelectMap">
+	<update id="update_Like" parameterType="int">
+	 	UPDATE product
+	 	<set>
+	 		like_it = like_it + 1
+	 	</set>
+		WHERE prod_no = #{prodNo}
+	</update>
+	 
+	<update id="update_Unlike" parameterType="int">
+	 	UPDATE product
+	 	<set>
+	 		like_it = like_it - 1
+	 	</set>
+	 	WHERE prod_no = #{prodNo}
+	</update>
+	 
+	<select    id="select_Like" parameterType="int" resultType="int">
+	 	SELECT
+	 	like_it
+	 	FROM product
+		WHERE prod_no = #{prodNo}
+	</select>
+	 
+	<!-- SQL : SELECT ONE -->
+	<select 	id="getProduct"	parameterType="int"	resultMap="productSelectMap">
 		SELECT
-		prod_no , prod_name , prod_detail , manufacture_day , price , image_file , reg_date, stock	
+		prod_no , prod_name , prod_detail , manufacture_day , price , image_file , reg_date, stock, like_it	
 		FROM product
 		WHERE prod_no = #{value}
-	 </select>
+	</select>
 	 
-	 <!-- SQL : UPDATE -->
-	 <update	id="updateProduct"	parameterType="product" >
+	<!-- SQL : UPDATE -->
+	<update	id="updateProduct"	parameterType="product" >
 	   	UPDATE product
 	   	<set>
 	   		price 			= #{price} ,
@@ -47,7 +71,7 @@
 			stock			= #{stock}
 	   	</set>
 	   	WHERE prod_no = #{prodNo}
-	 </update>
+	</update>
 		 
 	<!-- SQL : SELECT LIST -->
 	<select  id="getProductList"  parameterType="search"	resultMap="productSelectMap">
@@ -79,7 +103,7 @@
 											ORDER BY prod_no ) inner_table
 						WHERE ROWNUM &lt;= #{endRowNum} )
 		WHERE row_seq BETWEEN #{startRowNum} AND #{endRowNum} 
-	 </select>
+	</select>
 	 	<!--  위 두번째 subQuery 의  
 	 			WHERE ROWNUM &lt;= #{endRowNum} ) 는
 	 			WHERE ROWNUM <= #{endRowNum} ) 의미이며..
@@ -92,8 +116,8 @@
 		-->
 	
 	<!-- SQL : SELECT ROW Count -->	 
-	 <select  id="getTotalCount"  parameterType="search"	 resultType="int">
-	  	SELECT COUNT(*)
+	<select  id="getTotalCount"  parameterType="search"	 resultType="int">
+		SELECT COUNT(*)
 	  	FROM(	SELECT	prod_no , prod_name , prod_detail , manufacture_day , price , image_file , reg_date, stock	
 				FROM product
 						<if test="searchCondition != null">
@@ -109,6 +133,6 @@
 								</if>
 							</where>
 						</if> ) countTable						
-	 </select>
+	</select>
 	 
 </mapper>

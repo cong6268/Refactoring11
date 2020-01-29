@@ -56,5 +56,16 @@ public class ProductServiceImpl implements ProductService{
 	public void updateProduct(Product product) throws Exception {
 		productDao.updateProduct(product);
 	}
-
+	
+	public void update_Like(int prodNo) throws Exception {
+		productDao.update_Like(prodNo);
+	}
+	
+	public void update_Unlike(int prodNo) throws Exception {
+		productDao.update_Unlike(prodNo);
+	}
+	
+	public int select_Like(int prodNo) throws Exception {
+		return productDao.select_Like(prodNo);
+	}
 }

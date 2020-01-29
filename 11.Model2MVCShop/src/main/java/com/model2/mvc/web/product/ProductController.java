@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,7 +24,10 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.model2.mvc.common.Page;
 import com.model2.mvc.common.Search;
+import com.model2.mvc.service.domain.Like;
 import com.model2.mvc.service.domain.Product;
+import com.model2.mvc.service.domain.User;
+import com.model2.mvc.service.likeprod.LikeService;
 import com.model2.mvc.service.product.ProductService;
 
 @Controller
@@ -33,6 +37,10 @@ public class ProductController {
 	@Autowired
 	@Qualifier("productServiceImpl")
 	private ProductService productService; 
+	
+	@Autowired
+	@Qualifier("likeServiceImpl")
+	private LikeService likeService; 
 
 	public ProductController() {
 		System.out.println(this.getClass());
@@ -69,7 +77,7 @@ public class ProductController {
         List<MultipartFile> fileList = request.getFiles("fileName");
         String fileName = request.getParameter("fileName");
         
-        String path = "C:\\workspace\\11.Model2MVCShop\\WebContent\\images\\uploadFiles\\";
+        String path = "C:\\Users\\User\\git\\repository2\\11.Model2MVCShop\\WebContent\\images\\uploadFiles\\";
         
         for (MultipartFile mf : fileList) {
         	String originFileName = mf.getOriginalFilename(); // 원본 파일 명
@@ -81,6 +89,7 @@ public class ProductController {
             files += originFileName+",";
          
             try {
+            	//썸머노트 사진추가로 error
                 mf.transferTo(new File(safeFile));
             } catch (IllegalStateException e) {
                 e.printStackTrace();
@@ -100,14 +109,25 @@ public class ProductController {
 	}
 	
 	@RequestMapping( value="getProduct", method=RequestMethod.GET )
-	public String getProduct(@RequestParam("prodNo") int prodNo, Model model, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public String getProduct(@RequestParam("prodNo") int prodNo, HttpSession session, Model model, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		System.out.println("/product/getProduct : GET");
 		
 		Product product=productService.getProduct(prodNo);
 		
-		model.addAttribute("product", product);
+		Like like = new Like();
+		User user=(User)session.getAttribute("user");
+	    like.setLikeUserId(user.getUserId());
+	    like.setRefId(Integer.toString(prodNo));
 		
+		if(likeService.countByLike(like) == 0) {
+			likeService.addLike(like);
+		}
+		like=likeService.getLike(like);
+		
+		model.addAttribute("product", product);
+		model.addAttribute("like", like);
+
 		String prodNO=request.getParameter("prodNo");
 		Cookie cookie = new Cookie(prodNO, prodNO);
 	    cookie.setPath("/");
@@ -147,7 +167,7 @@ public class ProductController {
         List<MultipartFile> fileList = request.getFiles("fileName");
         String fileName = request.getParameter("fileName");
         
-        String path = "C:\\workspace\\11.Model2MVCShop\\WebContent\\images\\uploadFiles\\";
+        String path = "C:\\Users\\User\\git\\repository2\\11.Model2MVCShop\\WebContent\\images\\uploadFiles\\";
         
         for (MultipartFile mf : fileList) {
         	String originFileName = mf.getOriginalFilename(); // 원본 파일 명

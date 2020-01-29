@@ -15,4 +15,9 @@ public interface ProductService {
 
 	public void updateProduct(Product product) throws Exception;
 	
+	public void update_Like(int prodNo) throws Exception;
+	
+	public void update_Unlike(int prodNo) throws Exception;
+	
+	public int select_Like(int prodNo) throws Exception;
 }

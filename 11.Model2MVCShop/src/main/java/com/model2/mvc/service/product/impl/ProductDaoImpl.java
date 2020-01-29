@@ -1,5 +1,6 @@
 package com.model2.mvc.service.product.impl;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
@@ -48,4 +49,17 @@ public class ProductDaoImpl implements ProductDao{
 	public int getTotalCount(Search search) throws Exception {
 		return sqlSession.selectOne("ProductMapper.getTotalCount", search);
 	}
+	
+	public void update_Like(int prodNo) throws Exception {
+		sqlSession.update("ProductMapper.update_Like", prodNo);
+	}
+	
+	public void update_Unlike(int prodNo) throws Exception {
+		sqlSession.update("ProductMapper.update_Unlike", prodNo);
+	}
+	
+	public int select_Like(int prodNo) throws Exception {
+		return sqlSession.selectOne("ProductMapper.select_Like", prodNo);
+	}
+	
 }

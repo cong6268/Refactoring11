@@ -44,6 +44,22 @@
 	                     </ul>
 	                 </li>
 	                 
+	              <li class="dropdown">
+	                     <a  href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+	                         <span >게시판</span>
+	                         <span class="caret"></span>
+	                     </a>
+	                     <ul class="dropdown-menu">
+		                         <li><a href="#">인기글게시판</a></li>
+		                         <li><a href="#">플래너공유</a></li>
+		                         <li><a href="#">동행찾기</a></li>
+		                         <li><a href="#">여행후기</a></li>
+		                         <li><a href="#">정보공유</a></li>
+		                         <li><a href="#">QnA</a></li>
+		                         <li><a href="#">자유게시판</a></li>
+		                     </ul>
+	                 </li>
+	                 
 	              <!-- 판매상품관리 DrowDown  -->
 	               <c:if test="${sessionScope.user.role == 'admin'}">
 		              <li class="dropdown">
@@ -115,6 +131,14 @@
 		
 	 	$( "a:contains('판매상품등록')" ).on("click" , function() {
 	 		$(self.location).attr("href","../product/addProductView.jsp;");
+		});
+	 	
+	 	/* $( "a:contains('게시판')" ).on("click" , function() {
+	 		$(self.location).attr("href","/community/getPopularPostList");
+		}); */
+	 	
+	 	$( "a:contains('자유게시판')" ).on("click" , function() {
+	 		$(self.location).attr("href","/community/getPostList");
 		});
 		
 	 	$( "a:contains('판매상품관리')" ).on("click" , function() {

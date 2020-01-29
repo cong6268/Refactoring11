@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="LikeMapper">
+ 	 	
+	<resultMap id="likeSelectMap" type="like">
+		<result property="likeId" 			column="like_id" 			jdbcType="VARCHAR"/>
+		<result property="likeType"	column="like_type" 		jdbcType="CHAR" />
+		<result property="refId" 	column="ref_id" 		jdbcType="VARCHAR" />
+		<result property="likeUserId" 			column="like_user_id" 	jdbcType="VARCHAR" />
+		<result property="likeCheck" 			column="like_check" 	jdbcType="CHAR" />
+	</resultMap>
+	
+	<update id="like_check" parameterType="like">
+	    UPDATE "LIKE"
+	    <set>
+	    	like_check = 'T'
+	    </set> 
+	    WHERE like_user_id = #{likeUserId} AND ref_id = #{refId}
+	</update>
+	
+	<update id="like_check_cancel" parameterType="like">
+		UPDATE "LIKE"
+		<set>
+			like_check = 'F'
+		</set>
+		WHERE like_user_id = #{likeUserId} AND ref_id = #{refId}
+	</update>
+	
+	<select id="countByLike" parameterType="like" resultType="int">
+	    SELECT COUNT(like_id)
+	    FROM "LIKE"
+	    WHERE like_user_id = #{likeUserId} AND ref_id = #{refId}
+	</select>
+
+	<select 	id="getLike"	parameterType="like"	resultMap="likeSelectMap">
+		SELECT
+		like_id , like_type , ref_id , like_user_id , like_check
+		FROM "LIKE"
+		WHERE like_user_id = #{likeUserId} AND ref_id = #{refId}
+	</select>
+	 
+	<insert id="addLike" parameterType="like">
+		INSERT INTO "LIKE"(like_id , like_type , ref_id , like_user_id , like_check) 
+		VALUES ( SEQ_like_like_id.NEXTVAL , 'C' , #{refId} , #{likeUserId} , 'F' )
+    </insert>
+
+</mapper>

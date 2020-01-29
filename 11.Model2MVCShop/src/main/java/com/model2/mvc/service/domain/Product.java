@@ -14,8 +14,18 @@ public class Product {
 	private Date regDate;
 	private String proTranCode;
 	private int stock;
+	private int likeIt;
 	
 	public Product(){
+		
+	}
+	
+	public int getLikeIt() {
+		return likeIt;
+	}
+
+	public void setLikeIt(int likeIt) {
+		this.likeIt = likeIt;
 	}
 	
 	public String getProTranCode() {
