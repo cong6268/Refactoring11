@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CommunityMapper">	
+ 	
+	<resultMap id="postSelectMap" type="post">
+		<result property="postId" 			column="post_id" 			jdbcType="VARCHAR"/>
+		<result property="postWriterId.userId"	column="writer_id" 		jdbcType="VARCHAR" />
+		<result property="boardName" 	column="board_name" 		jdbcType="CHAR" />
+		<result property="postGrade" 				column="post_grade" 					jdbcType="CHAR" />
+		<result property="postTitle" 				column="post_title" 					jdbcType="VARCHAR" />
+		<result property="postContent" 			column="post_content" 		jdbcType="VARCHAR" />
+		<result property="postDate" 				column="post_date" 					jdbcType="TIMESTAMP" />
+		<result property="accPerson" 				column="acc_person" 					jdbcType="NUMERIC" />
+		<result property="accStartDate" 				column="acc_start_date" 					jdbcType="TIMESTAMP" />
+		<result property="accEndDate" 				column="acc_end_date" 					jdbcType="TIMESTAMP" />
+		<result property="postLikeCount" 				column="post_like_count" 					jdbcType="NUMERIC" />
+		<!-- <result property="planId" 				column="plan_id" 					jdbcType="VARCHAR" /> -->
+		<result property="qnaFirstCate" 				column="qna_first_cate" 					jdbcType="CHAR" />
+		<result property="qnaSecondCate" 				column="qna_second_cate" 					jdbcType="CHAR" />
+		<result property="views" 				column="views" 					jdbcType="NUMERIC" />
+		<result property="blocked" 				column="blocked" 					jdbcType="CHAR" />
+		<result property="deleted" 				column="deleted" 					jdbcType="CHAR" />
+	</resultMap>
+	
+	<resultMap id="commentSelectMap" type="comment">
+		<result property="rcmtId" 			column="cmt_id" 			jdbcType="VARCHAR"/>
+		<result property="postId"	column="post_id" 		jdbcType="VARCHAR" />
+		<result property="cmtId" 	column="parent_cmt_id" 		jdbcType="VARCHAR" />
+		<result property="cmtWriterId.userId" 				column="writer_id" 					jdbcType="VARCHAR" />
+		<result property="cmtContent" 				column="cmt_content" 					jdbcType="VARCHAR" />
+		<result property="cmtDate" 			column="cmt_date" 		jdbcType="TIMESTAMP" />
+		<result property="secret" 				column="secret" 					jdbcType="CHAR" />
+		<result property="blocked" 				column="blocked" 					jdbcType="CHAR" />
+		<result property="deleted" 				column="deleted" 					jdbcType="CHAR" />
+	</resultMap>
+	
+	<!-- SQL : INSERT -->
+	<insert 	id="addPost"		parameterType="post" >
+		INSERT
+		INTO post( post_id , writer_id , board_name , post_grade , post_title , post_content , post_date , views , blocked , deleted , post_like_count ) 
+		VALUES	 ( SEQ_post_post_id.NEXTVAL , #{postWriterId.userId:VARCHAR} , #{boardName:CHAR} , #{postGrade:CHAR} , 
+							#{postTitle:VARCHAR} , #{postContent:VARCHAR} , SYSDATE , #{views:NUMERIC} , #{blocked:CHAR} , #{deleted:CHAR} , #{postLikeCount:NUMERIC} )
+	</insert>
+	
+	<update id="update_Like" parameterType="string">
+	 	UPDATE post
+	 	<set>
+	 		post_like_count = post_like_count + 1
+	 	</set>
+		WHERE post_id = #{postId}
+	</update>
+	 
+	<update id="update_Unlike" parameterType="string">
+	 	UPDATE post
+	 	<set>
+	 		post_like_count = post_like_count - 1
+	 	</set>
+	 	WHERE post_id = #{postId}
+	</update>
+	 
+	<select    id="select_Like" parameterType="string" resultType="int">
+	 	SELECT
+	 	post_like_count
+	 	FROM post
+		WHERE post_id = #{postId}
+	</select>
+	
+	<select 	id="getPost"	parameterType="string"	resultMap="postSelectMap">
+		SELECT
+		post_id , writer_id , board_name , post_grade , post_title , post_content , post_date , views , blocked , deleted , post_like_count
+		FROM post
+		WHERE post_id = #{value}
+	</select>
+	
+	<select  id="getPostList"  parameterType="search"	resultMap="postSelectMap">
+	  	SELECT * 
+	  	FROM (	SELECT inner_table.* , ROWNUM AS row_seq
+	  					FROM		(	SELECT post_id , writer_id , board_name , post_grade , post_title , post_content , post_date , acc_person , acc_start_date , acc_end_date , qna_first_cate , qna_second_cate , views , blocked , deleted , post_like_count 
+	  									FROM post
+											<if test="searchCondition != null">
+												<trim prefix="WHERE" prefixOverrides="AND | OR">
+													<if test="searchCondition == 0 and searchKeyword !='' ">
+										 				post_title LIKE '%${searchKeyword}%'
+													</if>
+													<if test="searchCondition == 1 and searchKeyword !='' ">
+										 				writer_id LIKE '%${searchKeyword}%'
+													</if>
+													<!-- <if test="searchCondition == 2 and searchKeyword !='' ">
+										 				tag_content LIKE '%${searchKeyword}%'
+													</if>
+													<if test="searchCondition != null">
+														AND p.prod_no=t.prod_no(+)
+													</if> -->
+												</trim>
+											</if>
+											<!-- <if test="searchCondition == null">
+												<where>
+												p.prod_no=t.prod_no(+)
+												</where>
+											</if> -->
+											ORDER BY post_date ) inner_table
+						WHERE ROWNUM &lt;= #{endRowNum} )
+		WHERE row_seq BETWEEN #{startRowNum} AND #{endRowNum} 
+	</select>
+	 	<!--  위 두번째 subQuery 의  
+	 			WHERE ROWNUM &lt;= #{endRowNum} ) 는
+	 			WHERE ROWNUM <= #{endRowNum} ) 의미이며..
+	 			< 는 keyword 로 &lt; 를	사용.
+	 			
+	 			<![CDATA[  ~~~  ]]> 를 이용하여 아래와 같이 사용  할 수 있다.
+	 			CDATA ==> Character Data 의 의미 Java 에서 \n 같은 특수문자 처리  
+
+				WHERE ROWNUM <![CDATA[ <=]]> #{endRowNum} )
+		-->
+	
+	<!-- SQL : SELECT ROW Count -->	 
+	<select  id="getPostTotalCount"  parameterType="search"	 resultType="int">
+		SELECT COUNT(*)
+	  	FROM(	SELECT	post_id , writer_id , board_name , post_grade , post_title , post_content , post_date , acc_person , acc_start_date , acc_end_date , qna_first_cate , qna_second_cate , views , blocked , deleted , post_like_count
+				FROM post
+						<if test="searchCondition != null">
+							<where>
+								<if test="searchCondition == 0 and searchKeyword !='' ">
+					 			post_title LIKE '%${searchKeyword}%'
+								</if>
+								<if test="searchCondition == 1 and searchKeyword !='' ">
+					 			writer_id LIKE '%${searchKeyword}%'
+								</if>
+								<if test="searchCondition == 2 and searchKeyword !='' ">
+					 			tag_content LIKE '%${searchKeyword}%'
+								</if>
+							</where>
+						</if> ) countTable						
+	</select>
+
+	<insert  id="addComment"		parameterType="comment">
+		INSERT
+		INTO "COMMENT"( post_id , parent_cmt_id , writer_id , cmt_date , cmt_content , secret , deleted , blocked )
+		VALUES	 ( #{postId:VARCHAR} , SEQ_comment_parent_cmt_id.NEXTVAL , #{cmtWriterId.userId:VARCHAR} , SYSDATE , 
+							#{cmtContent:VARCHAR} , #{secret:CHAR} , #{blocked:CHAR} , #{deleted:CHAR} )
+	</insert>
+	
+	<select id="getCommentList" parameterType="map" resultMap="commentSelectMap">
+  		SELECT *
+  		FROM ( SELECT inner_table.*, ROWNUM AS row_seq
+  						FROM ( SELECT post_id , parent_cmt_id , writer_id , cmt_date , cmt_content , secret , deleted , blocked 
+										FROM "COMMENT"
+										WHERE post_id = #{postId}
+										ORDER BY cmt_date DESC ) inner_table
+  						WHERE ROWNUM <![CDATA[<=]]> #{search.currentPage}*#{search.pageSize} )
+  		WHERE row_seq BETWEEN (#{search.currentPage}-1)*#{search.pageSize}+1
+  		AND #{search.currentPage}*#{search.pageSize}
+	</select>
+	
+	<select  id="getCommentTotalCount"  parameterType="map"	 resultType="int">
+		SELECT COUNT(*)
+	  	FROM(	SELECT	post_id , parent_cmt_id , writer_id , cmt_date , cmt_content , secret , deleted , blocked
+				FROM "COMMENT" WHERE post_Id = #{postId} ) countTable						
+	</select>
+	
+	<select 	id="getComment"	parameterType="string"	resultMap="commentSelectMap">
+		SELECT
+		post_id , parent_cmt_id , writer_id , cmt_date , cmt_content , secret , deleted , blocked
+		FROM "COMMENT"
+		WHERE parent_cmt_id = #{cmtId}
+	</select>
+	
+	<update id="updateComment" parameterType="comment">
+		UPDATE "COMMENT"
+			<set>
+				cmt_content = #{cmtContent}
+			</set>
+		WHERE parent_cmt_id = #{cmtId}
+	</update>
+	 
+</mapper> 
